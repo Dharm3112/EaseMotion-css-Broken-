@@ -307,5 +307,208 @@
         </section>
       </main>
     </div>
+
+    <script>
+      // Theme Toggle Logic
+      const themeBtn = document.getElementById('theme-toggle');
+      themeBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+      });
+
+      // Smooth scrolling and active state logic
+      const navLi = document.querySelectorAll(".sidebar-nav a");
+      const headerLi = document.querySelectorAll(".docs-header-links a:not(.ease-btn)");
+
+      // Combine all navigation links to find target sections/headings
+      const allLinks = [...navLi, ...headerLi];
+      const targetMap = new Map();
+
+      allLinks.forEach(link => {
+          const href = link.getAttribute("href");
+          if (href && href.startsWith("#")) {
+              const el = document.getElementById(href.slice(1));
+              if (el) {
+                  targetMap.set(href.slice(1), el);
+              }
+          }
+      });
+
+      // Helper to get absolute offset top relative to body
+      function getPageOffsetTop(element) {
+          let top = 0;
+          while (element) {
+              top += element.offsetTop;
+              element = element.offsetParent;
+          }
+          return top;
+      }
+
+      let targets = [];
+      function cacheTargetPositions() {
+          targets = [];
+          targetMap.forEach((el, id) => {
+              targets.push({
+                  id: id,
+                  offsetTop: getPageOffsetTop(el)
+              });
+          });
+          // Sort by offset top ascending
+          targets.sort((a, b) => a.offsetTop - b.offsetTop);
+      }
+
+      function updateActiveLink() {
+          const scrollPosition = window.scrollY;
+          const windowHeight = window.innerHeight;
+          const documentHeight = document.documentElement.scrollHeight;
+          const threshold = 160; // offset top threshold
+
+          // 1. Check if scrolled near the bottom of the page
+          if (scrollPosition + windowHeight >= documentHeight - 30) {
+              const lastNavLink = navLi[navLi.length - 1];
+              if (lastNavLink) {
+                  const lastId = lastNavLink.getAttribute("href").slice(1);
+                  activateId(lastId);
+                  return;
+              }
+          }
+
+          // 2. Otherwise, find the current section based on scroll position
+          let activeId = null;
+          for (let i = 0; i < targets.length; i++) {
+              if (scrollPosition >= targets[i].offsetTop - threshold) {
+                  activeId = targets[i].id;
+              } else {
+                  break;
+              }
+          }
+
+          if (activeId) {
+              activateId(activeId);
+          }
+      }
+
+      function activateId(activeId) {
+          // Update sidebar links
+          navLi.forEach(link => {
+              const href = link.getAttribute("href");
+              if (href === `#${activeId}`) {
+                  link.classList.add("active");
+              } else {
+                  link.classList.remove("active");
+              }
+          });
+
+          // Update header links
+          headerLi.forEach(link => {
+              const href = link.getAttribute("href");
+              const isComponentSubItem = ["buttons", "cards", "scroll-progress", "components"].includes(activeId);
+              if (href === `#${activeId}` || (href === "#components" && isComponentSubItem)) {
+                  link.classList.add("active");
+              } else {
+                  link.classList.remove("active");
+              }
+          });
+      }
+
+      // Cache targets and update active links
+      cacheTargetPositions();
+      updateActiveLink();
+
+      window.addEventListener("scroll", updateActiveLink, { passive: true });
+      window.addEventListener("resize", () => {
+          cacheTargetPositions();
+          updateActiveLink();
+      });
+
+      // Handle clicks for sidebar links (immediate active state transition)
+      navLi.forEach(link => {
+          link.addEventListener("click", function() {
+              const href = this.getAttribute("href");
+              if (href && href.startsWith("#")) {
+                  activateId(href.slice(1));
+              }
+          });
+      });
+
+      // Handle clicks for header links
+      headerLi.forEach(link => {
+          link.addEventListener("click", function() {
+              const href = this.getAttribute("href");
+              if (href && href.startsWith("#")) {
+                  activateId(href.slice(1));
+              }
+          });
+      });
+
+      // --- MOBILE SIDEBAR TOGGLE SCRIPT ---
+      document.addEventListener("DOMContentLoaded", function() {
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.docs-sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        if (sidebarToggle && sidebar) {
+          // Toggle the 'open' class when the hamburger button is clicked
+          sidebarToggle.addEventListener('click', function(e) {
+            e.stopPropagation(); 
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+          });
+
+          // Close the sidebar when clicking on the dark overlay background
+          if (overlay) {
+            overlay.addEventListener('click', function() {
+              sidebar.classList.remove('open');
+              overlay.classList.remove('open');
+            });
+          }
+
+          // Close the sidebar when a link is clicked on mobile
+          const navLinks = sidebar.querySelectorAll('a');
+          navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+              if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('open');
+              }
+            });
+          });
+        }
+      });
+
+      (() => {
+          const btn = document.getElementById("scrollTopBtn");
+          if (!btn) return;
+
+          const ring = btn.querySelector(".ease-scroll-top__ring circle");
+          const THRESHOLD = 300; // px before button appears
+          const CIRCUMFERENCE = 126; // 2π × r20
+
+          function updateProgress() {
+            const scrolled = window.scrollY;
+            const total = document.body.scrollHeight - window.innerHeight;
+
+            // Show / hide
+            if (scrolled > THRESHOLD) {
+              btn.classList.add("is-visible");
+            } else {
+              btn.classList.remove("is-visible");
+            }
+
+            // Drive ring: 0% → full circle filled
+            if (ring) {
+              const pct = Math.min(scrolled / total, 1);
+              ring.style.strokeDashoffset = CIRCUMFERENCE - pct * CIRCUMFERENCE;
+            }
+          }
+
+          window.addEventListener("scroll", updateProgress, { passive: true });
+
+          btn.addEventListener("click", () => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+      })();
+    </script>
   </body>
 </html>

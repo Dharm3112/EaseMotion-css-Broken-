@@ -673,3 +673,28 @@ body {
     transition: none;
   }
 }
+
+/* ── View Transitions API (Circular Reveal) ────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+  animation: clip-reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes clip-reveal {
+  from {
+    clip-path: circle(0% at 50% 100%);
+  }
+  to {
+    clip-path: circle(150% at 50% 100%);
+  }
+}

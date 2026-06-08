@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smooth Theme Transition (Fade In/Out)</title>
-    <link rel="stylesheet" href="../../../easemotion.css" />
+    <link rel="stylesheet" href="../../../easemotion.min.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -346,6 +346,15 @@
         const currentTheme =
           document.documentElement.getAttribute("data-theme");
         const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        // Calculate the center of the moon icon (theme toggle button)
+        const rect = themeBtn.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+
+        // Pass the coordinates to CSS custom properties
+        document.documentElement.style.setProperty("--moon-x", `${x}px`);
+        document.documentElement.style.setProperty("--moon-y", `${y}px`);
 
         if (document.startViewTransition) {
           document.startViewTransition(() => {

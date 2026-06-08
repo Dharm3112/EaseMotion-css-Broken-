@@ -695,6 +695,18 @@ body {
     clip-path: circle(0% at 50% 100%);
   }
   to {
-    clip-path: circle(150% at 50% 100%);
+    clip-path: circle(150% at var(--moon-x, 85%) var(--moon-y, 5%));
+  }
+}
+
+/* Fallback theme transition for browsers that don't support View Transitions API */
+@supports not (view-transition-name: root) {
+  .ease-theme-transition,
+  .ease-theme-transition * {
+    transition:
+      background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
